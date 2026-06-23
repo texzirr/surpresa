@@ -1,0 +1,945 @@
+/* ==========================================================================
+   RESET E CONFIGURAÇÕES DO IPHONE (iOS Safari Optimization)
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; /* Remove o flash cinza ao tocar no iOS */
+    -webkit-touch-callout: none; /* Desativa o menu de contexto ao segurar */
+    -webkit-user-select: none; /* Impede seleção de texto durante os jogos */
+    user-select: none;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    height: 100dvh; /* Dynamic Viewport Height para corrigir a barra do Safari no iPhone */
+    font-family: 'Poppins', sans-serif;
+    background-color: #0b0914;
+    color: #f3f0f7;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Base das Telas (SPA) */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    display: none;
+    padding: calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)) 20px;
+    background: radial-gradient(circle at center, #1a153a 0%, #0b0914 100%);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Botão Global de Voltar */
+.back-btn {
+    position: absolute;
+    top: calc(15px + env(safe-area-inset-top));
+    left: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f3f0f7;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    transition: background 0.3s;
+}
+.back-btn:active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Modais Universais */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 4, 10, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    padding: 20px;
+    transition: opacity 0.3s ease;
+}
+.modal.hidden {
+    display: none;
+    opacity: 0;
+}
+.modal-content {
+    background: linear-gradient(135deg, #251e4d 0%, #130f2b 100%);
+    border: 2px solid #ff7597;
+    border-radius: 24px;
+    padding: 30px 24px;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(255, 117, 151, 0.3);
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.modal-content h3 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2rem;
+    color: #ff7597;
+    margin-bottom: 15px;
+}
+.modal-content p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #ded9e6;
+    margin-bottom: 20px;
+}
+.modal-content button {
+    background: linear-gradient(90deg, #ff7597, #ff527b);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(255, 117, 151, 0.4);
+}
+
+/* ==========================================================================
+   TELA 1: FECHADURA BIOMÉTRICA
+   ========================================================================== */
+#screen-biometrics {
+    justify-content: center;
+}
+.bio-container {
+    text-align: center;
+}
+.bio-container h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 3rem;
+    color: #ff7597;
+    margin-bottom: 10px;
+    text-shadow: 0 0 15px rgba(255, 117, 151, 0.5);
+}
+.bio-container p {
+    font-size: 1rem;
+    color: #a29bb0;
+    margin-bottom: 50px;
+}
+.fingerprint {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed rgba(255, 117, 151, 0.3);
+    cursor: pointer;
+}
+.heart-pulse {
+    width: 70px;
+    height: 70px;
+    background-color: #ff7597;
+    position: relative;
+    transform: rotate(-45deg);
+    animation: heartbeat 1.2s infinite ease-in-out;
+    box-shadow: 0 0 25px rgba(255, 117, 151, 0.7);
+}
+.heart-pulse::before, .heart-pulse::after {
+    content: "";
+    width: 70px;
+    height: 70px;
+    background-color: #ff7597;
+    border-radius: 50%;
+    position: absolute;
+}
+.heart-pulse::before { top: -35px; left: 0; }
+.heart-pulse::after { left: 35px; top: 0; }
+
+/* Animação de Carregamento Circular em volta do Coração */
+.progress-ring {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    border-top-color: #ff7597;
+    border-right-color: #ff7597;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.fingerprint.pressing .progress-ring {
+    opacity: 1;
+    transform: rotate(360deg);
+    transition: transform 3s linear, opacity 0.3s;
+}
+
+/* ==========================================================================
+   TELA MENU PRINCIPAL
+   ========================================================================== */
+#screen-menu {
+    justify-content: flex-start;
+}
+#screen-menu header {
+    text-align: center;
+    margin-top: calc(20px + env(safe-area-inset-top));
+    margin-bottom: 30px;
+}
+#screen-menu h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.8rem;
+    color: #e0a899;
+}
+#screen-menu p {
+    color: #8e879e;
+    font-size: 0.95rem;
+}
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 100%;
+    max-width: 360px;
+    padding-bottom: 30px;
+}
+.menu-item {
+    background: rgba(33, 27, 61, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 22px 15px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f3f0f7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(5px);
+    transition: transform 0.2s, background 0.2s, border-color 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.menu-item:active {
+    transform: scale(0.95);
+    background: rgba(255, 117, 151, 0.15);
+    border-color: rgba(255, 117, 151, 0.4);
+}
+.climax-btn {
+    grid-column: span 2;
+    background: linear-gradient(135deg, #ff7597 0%, #b8235a 100%);
+    border: none;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    box-shadow: 0 5px 20px rgba(255, 117, 151, 0.4);
+    animation: shadowPulse 2s infinite alternate;
+}
+
+/* ==========================================================================
+   TELA 2: CÉU GALÁCTICO (Constelação)
+   ========================================================================== */
+#screen-sky {
+    padding: 0;
+}
+#constellation-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: radial-gradient(circle at center, #0e0a24 0%, #04030a 100%);
+    overflow: hidden;
+}
+/* Linhas SVG conectando estrelas */
+.constellation-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+.constellation-line {
+    stroke: rgba(255, 255, 255, 0.15);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 2;
+}
+.constellation-line.distanced {
+    stroke: rgba(138, 43, 226, 0.3);
+    stroke-width: 1;
+}
+.star {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: radial-gradient(circle, #ffffff 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.star::after {
+    content: '★';
+    color: #ffdf00;
+    font-size: 1rem;
+    text-shadow: 0 0 8px #ffdf00;
+    animation: starTwinkle 1.5s infinite ease-in-out alternate;
+}
+/* Estrelas afastadas (Jan, Fev, Mar) */
+.star.distanced::after {
+    color: #a875ff;
+    text-shadow: 0 0 8px #a875ff;
+    animation-duration: 3s;
+}
+/* Estrela atual hoje */
+.star.today::after {
+    color: #ff416c;
+    font-size: 1.4rem;
+    text-shadow: 0 0 12px #ff416c;
+    animation: pulse 1s infinite alternate;
+}
+.star-label {
+    position: absolute;
+    top: 30px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 6px;
+    border-radius: 8px;
+    color: #dfd9eb;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ==========================================================================
+   TELA 3: MURAL DE POLAROIDS
+   ========================================================================== */
+#screen-polaroids {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#polaroid-board {
+    width: 100%;
+    height: 80%;
+    position: relative;
+    margin-top: 60px;
+}
+.instruction {
+    text-align: center;
+    color: #8e879e;
+    font-size: 0.85rem;
+    position: absolute;
+    bottom: -20px;
+    width: 100%;
+}
+/* Estrutura do Flip Card 3D */
+.polaroid {
+    position: absolute;
+    width: 145px;
+    height: 180px;
+    perspective: 1000px;
+    z-index: 10;
+}
+.card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+.polaroid.is-flipped .card-inner {
+    transform: rotateY(180deg);
+}
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 4px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.card-front {
+    background: #ffffff;
+    color: #222;
+}
+.photo-placeholder {
+    width: 100%;
+    height: 130px;
+    background: linear-gradient(45deg, #ffeef2, #ffcad4);
+    border: 1px solid #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+.photo-placeholder::after {
+    content: '❤️';
+    font-size: 2rem;
+    opacity: 0.7;
+}
+.polaroid-caption {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-top: 8px;
+    color: #444;
+}
+.card-back {
+    background: #fffdf6;
+    color: #2b261f;
+    transform: rotateY(180deg);
+    border: 2px solid #ff7597;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+.poem-text {
+    font-size: 0.65rem;
+    line-height: 1.3;
+    text-align: center;
+    font-style: italic;
+    padding: 5px;
+}
+
+/* ==========================================================================
+   TELA 4: ROLETA DA FORTUNA
+   ========================================================================== */
+.roulette-container {
+    position: relative;
+    width: 290px;
+    height: 290px;
+    margin-top: 70px;
+    margin-bottom: 25px;
+}
+#wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 6px solid #ff7597;
+    background: conic-gradient(
+        #3b2d75 0deg 60deg, #251a52 60deg 120deg,
+        #3b2d75 120deg 180deg, #251a52 180deg 240deg,
+        #3b2d75 240deg 300deg, #251a52 300deg 360deg
+    );
+    position: relative;
+    overflow: hidden;
+    transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+    box-shadow: 0 0 25px rgba(255, 117, 151, 0.4);
+}
+/* Marcador fixo em cima da roleta */
+.pointer {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 25px solid #ff416c;
+    z-index: 15;
+}
+#spin-btn {
+    background: linear-gradient(90deg, #ff7597, #ff527b);
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(255, 117, 151, 0.4);
+}
+#spin-btn:disabled {
+    background: #463f54;
+    box-shadow: none;
+    color: #837a94;
+}
+#roulette-status {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: #a29bb0;
+}
+#prize-code {
+    display: inline-block;
+    background: #110d24;
+    color: #ffdf00;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px dashed #ffdf00;
+    letter-spacing: 1px;
+    margin-top: 5px;
+}
+
+/* ==========================================================================
+   TELA 5: TERMÔMETRO DO AMOR
+   ========================================================================== */
+.thermo-container {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+}
+.thermometer {
+    width: 45px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 3px solid #3c3269;
+    border-radius: 30px;
+    position: relative;
+    padding: 4px;
+    margin-bottom: 40px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+.thermometer::after {
+    content: '';
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 75px;
+    height: 75px;
+    background: #3c3269;
+    border-radius: 50%;
+    z-index: 1;
+}
+#temperature {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, #ff416c, #ff4b2b);
+    border-radius: 30px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: height 0.1s ease-out;
+    box-shadow: 0 0 20px rgba(255, 75, 43, 0.6);
+}
+/* Bulbo preenchido internamente */
+.thermometer-bulb-fill {
+    position: absolute;
+    bottom: -17px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 59px;
+    height: 59px;
+    background: #ff416c;
+    border-radius: 50%;
+    z-index: 2;
+    transition: background 0.3s;
+}
+#tap-btn {
+    background: linear-gradient(135deg, #8a2be2 0%, #4a00e0 100%);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 16px 24px;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 300px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(74, 0, 224, 0.4);
+}
+#tap-btn.shake {
+    animation: buttonShake 0.1s infinite alternate;
+}
+
+/* ==========================================================================
+   TELA 6: RASPADINHA DO DESTINO
+   ========================================================================== */
+#screen-scratch h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.2rem;
+    color: #ff7597;
+    margin-top: 50px;
+    margin-bottom: 35px;
+}
+.scratch-container {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 3px solid #ff7597;
+}
+.scratch-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #191436;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.2rem;
+    color: #ffdf00;
+    text-shadow: 0 2px 10px rgba(255,223,0,0.4);
+}
+#scratch-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   TELA 7: TOCA-DISCOS VIRTUAL
+   ========================================================================== */
+#screen-record p {
+    margin-top: 30px;
+    color: #a29bb0;
+    font-size: 0.9rem;
+}
+.record-player {
+    position: relative;
+    width: 290px;
+    height: 330px;
+    margin-top: 60px;
+    background: linear-gradient(135deg, #2c224d 0%, #17112e 100%);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+.vinyl {
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, #222 25%, #050505 26%, #111 30%, #000 70%);
+    border-radius: 50%;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+/* Ranhuras do vinil simuladas por CSS */
+.vinyl::before {
+    content: '';
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border: 1px dashed rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+.vinyl-center {
+    width: 50px;
+    height: 50px;
+    background: #ff7597;
+    border-radius: 50%;
+    border: 2px solid #000;
+}
+.vinyl.playing {
+    animation: recordSpin 3.5s linear infinite;
+}
+/* Braço/Agulha do Toca-Discos */
+.needle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 25px;
+    height: 110px;
+    background: #a29bb0;
+    border-radius: 4px;
+    transform-origin: top center;
+    transform: rotate(0deg);
+    transition: transform 0.5s ease;
+    z-index: 10;
+    box-shadow: -2px 2px 5px rgba(0,0,0,0.3);
+}
+.needle.engaged {
+    transform: rotate(28deg);
+}
+
+/* ==========================================================================
+   TELA 8: POTE DE MOTIVOS
+   ========================================================================== */
+.jar-container {
+    margin-top: 70px;
+    text-align: center;
+    cursor: pointer;
+}
+.jar {
+    width: 160px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 4px solid #e0a899;
+    border-radius: 40px 40px 25px 25px;
+    position: relative;
+    margin: 0 auto 25px auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.1);
+    animation: floatAnimation 3s infinite ease-in-out;
+}
+/* Tampa do pote */
+.jar::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 15px;
+    background: #b57c6d;
+    border-radius: 6px;
+}
+/* Papelzinhos dentro do pote */
+.jar::after {
+    content: '✉️ ✉️\n✉️ ✉️ ✉️';
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    font-size: 1.4rem;
+    text-align: center;
+    opacity: 0.75;
+    white-space: pre-line;
+}
+.paper-style {
+    background: #fffdf2 !important;
+    border: 2px dashed #b57c6d !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+}
+#reason-text {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8rem;
+    color: #4a3319;
+}
+.paper-style button {
+    background: #b57c6d !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================================================
+   TELA 9: COFRE SECRETO
+   ========================================================================== */
+.vault-container {
+    width: 100%;
+    max-width: 320px;
+    margin-top: 60px;
+    text-align: center;
+}
+.vault-container h2 {
+    font-size: 1.1rem;
+    color: #a29bb0;
+    margin-bottom: 20px;
+}
+#vault-input {
+    width: 100%;
+    background: #0f0c22;
+    border: 2px solid #3c3269;
+    padding: 15px;
+    font-size: 1.6rem;
+    color: #ffdf00;
+    text-align: center;
+    border-radius: 16px;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+#vault-input:focus {
+    outline: none;
+    border-color: #ff7597;
+}
+.vault-container button {
+    background: linear-gradient(90deg, #ff7597, #b8235a);
+    color: white;
+    width: 100%;
+    border: none;
+    padding: 14px;
+    font-weight: 600;
+    border-radius: 16px;
+    font-size: 1rem;
+}
+#vault-msg {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    min-height: 20px;
+}
+
+/* ==========================================================================
+   TELA 10: O CLÍMAX & SURPRESA FINAL
+   ========================================================================== */
+#screen-climax {
+    justify-content: center;
+}
+.climax-phase {
+    width: 100%;
+    max-width: 340px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.climax-phase.active {
+    display: flex;
+}
+#climax-phase-1 h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+    color: #ff7597;
+    margin-bottom: 40px;
+}
+#btn-ready {
+    background: linear-gradient(90deg, #ff7597, #ff416c);
+    color: white;
+    border: none;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(255,117,151,0.6);
+    animation: heartbeat 1s infinite alternate;
+}
+
+/* A grande carta rolável */
+.large-letter {
+    width: 100%;
+    max-height: 380px;
+    background: #fffef9;
+    border-radius: 16px;
+    padding: 25px 20px;
+    color: #2c251e;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.05), 0 10px 25px rgba(0,0,0,0.3);
+    border: 1px solid #eadecc;
+    margin-bottom: 25px;
+}
+.large-letter p {
+    margin-bottom: 15px;
+}
+.continue-btn {
+    background: linear-gradient(90deg, #8a2be2, #4a00e0);
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 30px;
+    font-weight: 600;
+}
+
+/* Pergunta final e botões */
+#climax-phase-3 h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.3rem;
+    color: #ff7597;
+    margin-bottom: 50px;
+    line-height: 1.3;
+}
+.final-buttons {
+    position: relative;
+    width: 100%;
+    height: 120px;
+}
+#btn-sim {
+    position: absolute;
+    left: 15%;
+    top: 0;
+    background: linear-gradient(90deg, #11998e, #38ef7d);
+    color: white;
+    border: none;
+    width: 100px;
+    height: 50px;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+}
+#btn-nao {
+    position: absolute;
+    right: 15%;
+    top: 0;
+    background: #e63946;
+    color: white;
+    border: none;
+    width: 70px;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+    transition: all 0.15s ease-out; /* Movimentação suave do fujão */
+}
+
+/* Canvas dos fogos de artifício cobrindo a tela */
+#fireworks-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 250;
+    display: none;
+}
+
+/* ==========================================================================
+   ANIMAÇÕES CSS (KEYFRAMES)
+   ========================================================================== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleUp {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+@keyframes heartbeat {
+    0% { transform: scale(0.9) rotate(-45deg); }
+    50% { transform: scale(1.05) rotate(-45deg); }
+    100% { transform: scale(0.9) rotate(-45deg); }
+}
+@keyframes pulse {
+    from { transform: scale(1); opacity: 0.9; }
+    to { transform: scale(1.15); opacity: 1; }
+}
+@keyframes shadowPulse {
+    from { box-shadow: 0 5px 15px rgba(255, 117, 151, 0.4); }
+    to { box-shadow: 0 5px 25px rgba(255, 117, 151, 0.8), 0 0 10px #ff7597; }
+}
+@keyframes starTwinkle {
+    from { opacity: 0.4; filter: drop-shadow(0 0 2px rgba(255,223,0,0.5)); }
+    to { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,223,0,1)); }
+}
+@keyframes buttonShake {
+    0% { transform: translateX(-2px) rotate(-1deg); }
+    100% { transform: translateX(2px) rotate(1deg); }
+}
+@keyframes recordSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes floatAnimation {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+.hidden {
+    display: none !important;
+}

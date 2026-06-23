@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Você</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Fontes do Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- TELA 1: BIOMETRIA -->
+    <section id="screen-biometrics" class="screen active">
+        <div class="bio-container">
+            <h1>Pressione e segure</h1>
+            <p>Para desbloquear nosso mundo</p>
+            <div id="fingerprint-btn" class="fingerprint">
+                <div class="heart-pulse"></div>
+                <div class="progress-ring"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA MENU PRINCIPAL (Navegação Livre) -->
+    <section id="screen-menu" class="screen">
+        <header>
+            <h2>Nosso Universo</h2>
+            <p>Explore como quiser...</p>
+        </header>
+        <div class="menu-grid">
+            <button class="menu-item" onclick="navTo('screen-sky')">🌌 Constelação</button>
+            <button class="menu-item" onclick="navTo('screen-polaroids')">📸 Memórias</button>
+            <button class="menu-item" onclick="navTo('screen-roulette')">🎡 Roleta</button>
+            <button class="menu-item" onclick="navTo('screen-thermometer')">🌡️ Termômetro</button>
+            <button class="menu-item" onclick="navTo('screen-scratch')">🪙 Raspadinha</button>
+            <button class="menu-item" onclick="navTo('screen-record')">🎵 Toca-Discos</button>
+            <button class="menu-item" onclick="navTo('screen-jar')">🏺 Pote de Motivos</button>
+            <button class="menu-item" onclick="navTo('screen-vault')">🔐 Cofre Secreto</button>
+            <button class="menu-item climax-btn" onclick="navTo('screen-climax')">💌 Surpresa Final</button>
+        </div>
+    </section>
+
+    <!-- TELA 2: CÉU GALÁCTICO -->
+    <section id="screen-sky" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <div id="constellation-container">
+            <!-- Estrelas geradas via JS -->
+        </div>
+        <div id="star-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 id="star-date">Data</h3>
+                <p id="star-text">Texto da estrela</p>
+                <button onclick="closeModal('star-modal')">Fechar</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA 3: POLAROIDS -->
+    <section id="screen-polaroids" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <div id="polaroid-board">
+            <!-- 10 Polaroids serão inseridas aqui via JS/HTML -->
+            <p class="instruction">Arraste as fotos e toque para virar</p>
+        </div>
+    </section>
+
+    <!-- TELA 4: ROLETA -->
+    <section id="screen-roulette" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <div class="roulette-container">
+            <div id="wheel"></div>
+            <div class="pointer"></div>
+        </div>
+        <button id="spin-btn">Girar Roleta</button>
+        <p id="roulette-status">Você tem 3 resgates disponíveis.</p>
+        <div id="prize-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Parabéns!</h3>
+                <p id="prize-text">Prêmio</p>
+                <p>Seu código: <strong id="prize-code"></strong></p>
+                <button onclick="closeModal('prize-modal')">Guardar Código</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA 5: TERMÔMETRO -->
+    <section id="screen-thermometer" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <div class="thermo-container">
+            <div class="thermometer">
+                <div id="temperature"></div>
+            </div>
+            <button id="tap-btn">O quanto você me ama? (Toque rápido!)</button>
+        </div>
+    </section>
+
+    <!-- TELA 6: RASPADINHA -->
+    <section id="screen-scratch" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <h2>Raspe para descobrir</h2>
+        <div class="scratch-container">
+            <div class="scratch-content">Vale um Beijo Apaixonado!</div>
+            <canvas id="scratch-canvas"></canvas>
+        </div>
+    </section>
+
+    <!-- TELA 7: TOCA-DISCOS -->
+    <section id="screen-record" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <div class="record-player">
+            <div id="vinyl" class="vinyl"></div>
+            <div id="needle" class="needle"></div>
+        </div>
+        <p>Arraste a agulha para o disco</p>
+    </section>
+
+    <!-- TELA 8: POTE DE MOTIVOS -->
+    <section id="screen-jar" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <div class="jar-container" onclick="openPaper()">
+            <div class="jar"></div>
+            <p>Toque no pote para puxar um papel</p>
+        </div>
+        <div id="paper-modal" class="modal hidden">
+            <div class="modal-content paper-style">
+                <p id="reason-text">Motivo gerado aqui...</p>
+                <button onclick="closeModal('paper-modal')">Guardar</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TELA 9: COFRE SECRETO -->
+    <section id="screen-vault" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        <div class="vault-container">
+            <h2>Insira um Código da Roleta</h2>
+            <input type="text" id="vault-input" placeholder="XXXX-XXXX" maxlength="9">
+            <button onclick="checkVault()">Abrir Cofre</button>
+            <p id="vault-msg"></p>
+        </div>
+    </section>
+
+    <!-- TELA 10: O CLÍMAX -->
+    <section id="screen-climax" class="screen">
+        <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
+        
+        <div id="climax-phase-1" class="climax-phase active">
+            <h2>Você está pronta para a surpresa final?</h2>
+            <button id="btn-ready" onclick="nextClimaxPhase()">SIM</button>
+        </div>
+
+        <div id="climax-phase-2" class="climax-phase hidden">
+            <div class="large-letter">
+                <p>Aqui entra o seu texto gigante. Todo o seu coração derramado nestas linhas. A história de vocês, as lutas, a saudade entre janeiro e março, e a alegria de estarem juntos hoje, dia 19 de junho de 2026...</p>
+                <!-- Você preencherá este texto depois -->
+            </div>
+            <button class="continue-btn" onclick="finalQuestion()">Continuar</button>
+        </div>
+
+        <div id="climax-phase-3" class="climax-phase hidden">
+            <h2>Você aceita continuar escrevendo essa história comigo?</h2>
+            <div class="final-buttons">
+                <button id="btn-sim" onclick="triggerFireworks()">SIM</button>
+                <button id="btn-nao">NÃO</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOGOS DE ARTIFÍCIO (Canvas) -->
+    <canvas id="fireworks-canvas"></canvas>
+
+    <script src="js.js"></script>
+</body>
+</html>
