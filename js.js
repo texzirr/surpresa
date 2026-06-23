@@ -1,53 +1,70 @@
 /* ==========================================================================
-   SISTEMA DE NAVEGAÇÃO E MODAIS (SPA)
+   SISTEMA DE NAVEGAÇÃO E MODAIS
    ========================================================================== */
 function navTo(screenId) {
-    // Esconde todas as telas
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    // Mostra a tela desejada
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
 }
-
 function closeModal(modalId) {
     document.getElementById(modalId).classList.add('hidden');
 }
 
 /* ==========================================================================
-   TELA 1: FECHADURA BIOMÉTRICA
+   TELA 0: SENHA DE ACESSO
+   ========================================================================== */
+let pwdAttempts = 0;
+function checkPassword() {
+    const input = document.getElementById('pwd-input').value.trim();
+    const msg = document.getElementById('pwd-msg');
+    
+    if (input === "") {
+        msg.innerText = "Por favor, digite uma data!";
+        return;
+    }
+    
+    if (input === "20/08/2025" || input === "20082025") {
+        navTo('screen-biometrics');
+    } else {
+        pwdAttempts++;
+        if (pwdAttempts >= 3) {
+            msg.innerText = "ALERTA: Se errar mais uma vez o código do site será deletado automaticamente e você nunca verá a surpresa.";
+        } else {
+            msg.innerText = "Data incorreta. Tente novamente.";
+        }
+    }
+}
+
+/* ==========================================================================
+   TELA 1: BIOMETRIA
    ========================================================================== */
 const bioBtn = document.getElementById('fingerprint-btn');
 let bioTimer;
 
 const startBio = (e) => {
-    e.preventDefault(); // Evita scroll acidental
+    e.preventDefault(); 
     bioBtn.classList.add('pressing');
-    // Precisa segurar por 3 segundos para "ler a biometria"
-    bioTimer = setTimeout(() => {
-        navTo('screen-menu');
-    }, 3000); 
+    bioTimer = setTimeout(() => { navTo('screen-menu'); }, 3000); 
 };
-
 const stopBio = (e) => {
     e.preventDefault();
     bioBtn.classList.remove('pressing');
     clearTimeout(bioTimer);
 };
-
-// Eventos de toque para iPhone
+// Mouse e Touch
 bioBtn.addEventListener('touchstart', startBio, {passive: false});
 bioBtn.addEventListener('touchend', stopBio);
-bioBtn.addEventListener('touchcancel', stopBio);
-// Eventos de mouse para teste no PC
 bioBtn.addEventListener('mousedown', startBio);
 bioBtn.addEventListener('mouseup', stopBio);
 bioBtn.addEventListener('mouseleave', stopBio);
 
 
 /* ==========================================================================
-   TELA 2: CÉU GALÁCTICO (Linha do Tempo)
+   TELA 2: CÉU GALÁCTICO E CONTADOR
    ========================================================================== */
+// Data Atualizada Automaticamente
+const hoje = new Date();
+const dataFormatada = hoje.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'});
+
 const starsData = [
     { date: "20 Ago 2025", text: "O dia em que nossos universos colidiram pela primeira vez." },
     { date: "20 Set 2025", text: "Um mês descobrindo o seu sorriso." },
@@ -59,143 +76,131 @@ const starsData = [
     { date: "Mar 2026", text: "A saudade provou que o que temos é real.", distanced: true },
     { date: "20 Abr 2026", text: "O reencontro. A primavera voltou." },
     { date: "20 Mai 2026", text: "Mais fortes, mais maduros, mais apaixonados." },
-    { date: "Hoje (19 Jun)", text: "Onde estamos agora, prontos para a próxima fase.", today: true }
+    { date: `Hoje (${dataFormatada})`, text: "Onde estamos agora, prontos para a próxima fase.", today: true }
 ];
 
 function initConstellation() {
     const container = document.getElementById('constellation-container');
     container.innerHTML = ''; 
-    
-    // Cria SVG para as linhas
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('constellation-svg');
     container.appendChild(svg);
 
     let prevPos = null;
-
-    // Gerar posições aleatórias, mas progressivas de cima para baixo
     starsData.forEach((star, index) => {
         const starEl = document.createElement('div');
         starEl.classList.add('star');
         if (star.distanced) starEl.classList.add('distanced');
         if (star.today) starEl.classList.add('today');
 
-        // Posição na tela (Zigue-zague descendo)
         const topPercent = 10 + (index * 8); 
         const leftPercent = (index % 2 === 0) ? 20 + Math.random() * 20 : 60 + Math.random() * 20;
-        
-        starEl.style.top = `${topPercent}%`;
-        starEl.style.left = `${leftPercent}%`;
+        starEl.style.top = `${topPercent}%`; starEl.style.left = `${leftPercent}%`;
 
-        // Interação de abrir modal
+        // Explosão ao clicar
         starEl.onclick = () => {
-            document.getElementById('star-date').innerText = star.date;
-            document.getElementById('star-text').innerText = star.text;
-            document.getElementById('star-modal').classList.remove('hidden');
+            starEl.classList.add('exploding');
+            setTimeout(() => {
+                document.getElementById('star-date').innerText = star.date;
+                document.getElementById('star-text').innerText = star.text;
+                document.getElementById('star-modal').classList.remove('hidden');
+                starEl.classList.remove('exploding'); // reseta
+            }, 400); // tempo da animação CSS
         };
 
         const label = document.createElement('div');
-        label.classList.add('star-label');
-        label.innerText = star.date;
-        starEl.appendChild(label);
-        
-        container.appendChild(starEl);
+        label.classList.add('star-label'); label.innerText = star.date;
+        starEl.appendChild(label); container.appendChild(starEl);
 
-        // Desenha linha conectando com a anterior
         if (prevPos) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', `${prevPos.x}%`);
-            line.setAttribute('y1', `${prevPos.y}%`);
-            line.setAttribute('x2', `${leftPercent}%`);
-            line.setAttribute('y2', `${topPercent}%`);
+            line.setAttribute('x1', `${prevPos.x}%`); line.setAttribute('y1', `${prevPos.y}%`);
+            line.setAttribute('x2', `${leftPercent}%`); line.setAttribute('y2', `${topPercent}%`);
             line.classList.add('constellation-line');
-            if (star.distanced || starsData[index-1].distanced) {
-                line.classList.add('distanced');
-            }
+            if (star.distanced || starsData[index-1].distanced) line.classList.add('distanced');
             svg.appendChild(line);
         }
         prevPos = { x: leftPercent, y: topPercent };
     });
 }
-// Inicializa o céu logo de cara
 initConstellation();
+
+// Contador ao vivo
+const startDate = new Date('2025-08-20T00:00:00');
+setInterval(() => {
+    const now = new Date();
+    const diff = now - startDate;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const mins = Math.floor((diff / 1000 / 60) % 60);
+    const secs = Math.floor((diff / 1000) % 60);
+    document.getElementById('time-display').innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
+}, 1000);
 
 
 /* ==========================================================================
-   TELA 3: MURAL DE POLAROIDS
+   TELA 3: POLAROIDS (SISTEMA DRAG CORRIGIDO)
    ========================================================================== */
-const poemas = [
-    "Como Machado de Assis diria: 'Cada qual sabe amar a seu modo; o modo, pouco importa; o essencial é que saiba amar'.",
-    "Você é a poesia que eu nunca soube escrever, mas que vivo todos os dias.",
-    "O amor é o espaço e o tempo tornados sensíveis ao coração. - Marcel Proust",
-    "Se eu tivesse que escolher entre te amar e respirar, usaria meu último suspiro para dizer eu te amo.",
-    "Com você, descobri que as melhores histórias não estão nos livros, mas nos nossos momentos.",
-    "Até os detalhes mais simples se tornam galáxias inteiras quando estou com você.",
-    "Você é meu refúgio seguro em um mundo caótico.",
-    "Amor é fogo que arde sem se ver... E eu queimo por você a cada instante. - Camões",
-    "A distância de Jan a Mar foi apenas um intervalo para afinar nossa melodia.",
-    "Nosso amor não é um ponto final, é sempre uma reticência de coisas boas que ainda virão..."
-];
-
 function initPolaroids() {
     const board = document.getElementById('polaroid-board');
     for(let i = 0; i < 10; i++) {
         const p = document.createElement('div');
         p.className = 'polaroid';
-        // Posição bagunçada
-        p.style.top = `${Math.random() * 60 + 10}%`;
-        p.style.left = `${Math.random() * 50}%`;
+        p.style.top = `${Math.random() * 50 + 10}%`;
+        p.style.left = `${Math.random() * 40}%`;
         p.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
 
         p.innerHTML = `
             <div class="card-inner">
                 <div class="card-front">
-                    <div class="photo-placeholder">
-                        <span style="position:absolute; z-index:2;">Foto ${i+1}</span>
-                        </div>
+                    <div class="photo-placeholder"><span>Foto ${i+1}</span></div>
                     <div class="polaroid-caption">Lembrança ${i+1}</div>
                 </div>
-                <div class="card-back">
-                    <p class="poem-text">"${poemas[i]}"</p>
-                </div>
+                <div class="card-back"><p class="poem-text">Poema incrível ${i+1}...</p></div>
             </div>
         `;
         board.appendChild(p);
-        dragElement(p);
-
-        // Toque para virar a carta
-        p.addEventListener('click', () => {
-            p.classList.toggle('is-flipped');
+        
+        // Clique (Touch/Mouse rápido) para virar
+        p.addEventListener('click', (e) => {
+            // Só vira se não tiver arrastado (evitar virar ao soltar o drag)
+            if(!p.dataset.dragged) p.classList.toggle('is-flipped');
         });
+        
+        makeDraggable(p);
     }
 }
-initPolaroids();
-
-// Função para arrastar elementos na tela do iPhone
-function dragElement(elmnt) {
+function makeDraggable(elmnt) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    elmnt.ontouchstart = dragTouchStart;
-    
-    function dragTouchStart(e) {
-        pos3 = e.touches[0].clientX;
-        pos4 = e.touches[0].clientY;
-        document.ontouchend = closeDragElement;
-        document.ontouchmove = elementTouchDrag;
+    elmnt.onmousedown = dragStart;
+    elmnt.ontouchstart = dragStart;
+
+    function dragStart(e) {
+        elmnt.dataset.dragged = ""; // reseta flag de arrasto
+        if(e.type === 'touchstart') { pos3 = e.touches[0].clientX; pos4 = e.touches[0].clientY; }
+        else { pos3 = e.clientX; pos4 = e.clientY; }
+        document.onmouseup = dragEnd;
+        document.ontouchend = dragEnd;
+        document.onmousemove = drag;
+        document.ontouchmove = drag;
     }
-    function elementTouchDrag(e) {
-        e.preventDefault();
-        pos1 = pos3 - e.touches[0].clientX;
-        pos2 = pos4 - e.touches[0].clientY;
-        pos3 = e.touches[0].clientX;
-        pos4 = e.touches[0].clientY;
+    function drag(e) {
+        elmnt.dataset.dragged = "true"; // Marcou como arrastado
+        let clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+        pos1 = pos3 - clientX; pos2 = pos4 - clientY;
+        pos3 = clientX; pos4 = clientY;
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
     }
-    function closeDragElement() {
-        document.ontouchend = null;
-        document.ontouchmove = null;
+    function dragEnd() {
+        document.onmouseup = null; document.onmousemove = null;
+        document.ontouchend = null; document.ontouchmove = null;
+        // Limpa o arrasto depois de um microsegundo para o click funcionar
+        setTimeout(() => elmnt.dataset.dragged = "", 50);
     }
 }
+initPolaroids();
 
 
 /* ==========================================================================
@@ -203,47 +208,49 @@ function dragElement(elmnt) {
    ========================================================================== */
 let spinsLeft = 3;
 let currentDeg = 0;
-const prizes = ["Massagem Relaxante", "Jantar por Minha Conta", "Vale Mimos Especiais", "Dia de Cinema", "Beijo de Cinema", "Desejo Livre"];
-const validCodes = []; // Armazena os códigos gerados
+let prizes = [
+    "Massagem Relaxante", "Jantar por Minha Conta", "Vale Mimos Especiais", 
+    "Dia de Cinema", "Beijo de Cinema", "Desejo Livre", 
+    "Café na Cama", "Vale Abraço Infinito", "Piquenique", "Eu lavo a louça hoje"
+];
+const validCodes = [];
 
 const wheel = document.getElementById('wheel');
 const spinBtn = document.getElementById('spin-btn');
 
 function spinRoulette() {
-    if (spinsLeft <= 0) return;
+    if (spinsLeft <= 0 || prizes.length === 0) return;
     
     spinBtn.disabled = true;
-    const spinDeg = Math.floor(Math.random() * 360) + 1800; // Gira pelo menos 5 voltas
-    currentDeg += spinDeg;
+    currentDeg += Math.floor(Math.random() * 360) + 1800;
     wheel.style.transform = `rotate(${currentDeg}deg)`;
 
     setTimeout(() => {
         const prizeIndex = Math.floor(Math.random() * prizes.length);
-        const code = "AMOR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
-        validCodes.push(code); // Salva para o Cofre
+        const wonPrize = prizes[prizeIndex];
+        prizes.splice(prizeIndex, 1); // Remove para não repetir
         
-        document.getElementById('prize-text').innerText = prizes[prizeIndex];
+        const code = "AMOR-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+        validCodes.push(code);
+        
+        document.getElementById('prize-text').innerText = wonPrize;
         document.getElementById('prize-code').innerText = code;
         document.getElementById('prize-modal').classList.remove('hidden');
 
         spinsLeft--;
         document.getElementById('roulette-status').innerText = `Você tem ${spinsLeft} resgates disponíveis.`;
         if (spinsLeft > 0) spinBtn.disabled = false;
-    }, 4000); // Espera a animação acabar
+    }, 4000);
 }
 spinBtn.addEventListener('click', spinRoulette);
 
-// Lógica do Cofre Secreto
 function checkVault() {
     const input = document.getElementById('vault-input').value.toUpperCase();
     const msg = document.getElementById('vault-msg');
-    
     if (validCodes.includes(input)) {
-        msg.style.color = '#38ef7d';
-        msg.innerText = "Código Válido! Preparando seu prêmio para o nosso encontro...";
+        msg.style.color = '#00f5d4'; msg.innerText = "Código Válido! Seu prêmio está guardado no meu coração.";
     } else {
-        msg.style.color = '#e63946';
-        msg.innerText = "Código inválido ou já utilizado.";
+        msg.style.color = '#ff4d4d'; msg.innerText = "Código inválido.";
     }
 }
 
@@ -255,11 +262,10 @@ let tempProgress = 0;
 const thermoBar = document.getElementById('temperature');
 const tapBtn = document.getElementById('tap-btn');
 
-tapBtn.addEventListener('touchstart', (e) => {
+const fillThermo = (e) => {
     e.preventDefault();
     if (tempProgress >= 100) return;
-    
-    tempProgress += 8; // Sobe rápido
+    tempProgress += 8;
     if(tempProgress > 100) tempProgress = 100;
     
     thermoBar.style.height = `${tempProgress}%`;
@@ -268,113 +274,157 @@ tapBtn.addEventListener('touchstart', (e) => {
 
     if(tempProgress === 100) {
         tapBtn.innerText = "EXPLODIU DE AMOR!";
-        tapBtn.style.background = "#ff416c";
+        tapBtn.style.background = "#00f5d4";
+        tapBtn.style.color = "#011627";
         setTimeout(() => alert("Você tem acesso livre ao meu coração!"), 500);
     }
-});
+};
+tapBtn.addEventListener('touchstart', fillThermo, {passive: false});
+tapBtn.addEventListener('mousedown', fillThermo);
 
-// Decaimento natural (se ela parar de tocar)
 setInterval(() => {
     if (tempProgress > 0 && tempProgress < 100) {
-        tempProgress -= 3;
-        thermoBar.style.height = `${tempProgress}%`;
+        tempProgress -= 3; thermoBar.style.height = `${tempProgress}%`;
     }
 }, 500);
 
 
 /* ==========================================================================
-   TELA 6: RASPADINHA DO DESTINO
+   TELA 6: RASPADINHA (Mouse e Touch)
    ========================================================================== */
-const canvas = document.getElementById('scratch-canvas');
-const ctx = canvas.getContext('2d');
+const canvasScratch = document.getElementById('scratch-canvas');
+const ctxS = canvasScratch.getContext('2d');
 let isDrawing = false;
+let scratchPrizes = ["Vale Massagem", "Vale Beijo", "Eu pago a conta!"];
+let pickedPrize = scratchPrizes[Math.floor(Math.random() * scratchPrizes.length)];
+document.getElementById('scratch-prize').innerText = pickedPrize;
 
-// Ajusta o tamanho do canvas para cobrir a área
 function initScratch() {
-    canvas.width = 280;
-    canvas.height = 280;
-    // Pinta de cinza metálico
-    ctx.fillStyle = '#8a8a99';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // Texto por cima do cinza
-    ctx.font = '24px Poppins';
-    ctx.fillStyle = '#e0e0e0';
-    ctx.textAlign = 'center';
-    ctx.fillText('Raspe aqui', 140, 140);
+    canvasScratch.width = 280; canvasScratch.height = 280;
+    ctxS.fillStyle = '#90e0ef';
+    ctxS.fillRect(0, 0, canvasScratch.width, canvasScratch.height);
+    ctxS.font = '24px Poppins'; ctxS.fillStyle = '#03045e'; ctxS.textAlign = 'center';
+    ctxS.fillText('Raspe aqui', 140, 140);
 }
 initScratch();
 
-function getTouchPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches ? e.touches[0] : e;
-    return {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-    };
+function getScratchPos(e) {
+    const rect = canvasScratch.getBoundingClientRect();
+    let x, y;
+    if (e.touches) {
+        x = e.touches[0].clientX - rect.left; y = e.touches[0].clientY - rect.top;
+    } else {
+        x = e.clientX - rect.left; y = e.clientY - rect.top;
+    }
+    return { x, y };
 }
-
-const scratchStart = (e) => { isDrawing = true; scratch(e); };
-const scratchEnd = () => { isDrawing = false; };
-const scratch = (e) => {
+const startScratch = (e) => { isDrawing = true; scratchLine(e); };
+const stopScratch = () => { isDrawing = false; };
+const scratchLine = (e) => {
     if (!isDrawing) return;
     e.preventDefault();
-    const pos = getTouchPos(e);
-    
-    // Apaga a cor cinza revelando o fundo
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
-    ctx.fill();
+    const pos = getScratchPos(e);
+    ctxS.globalCompositeOperation = 'destination-out';
+    ctxS.beginPath(); ctxS.arc(pos.x, pos.y, 25, 0, Math.PI * 2); ctxS.fill();
 };
 
-canvas.addEventListener('touchstart', scratchStart, {passive: false});
-canvas.addEventListener('touchmove', scratch, {passive: false});
-canvas.addEventListener('touchend', scratchEnd);
+canvasScratch.addEventListener('touchstart', startScratch, {passive: false});
+canvasScratch.addEventListener('touchmove', scratchLine, {passive: false});
+canvasScratch.addEventListener('touchend', stopScratch);
+canvasScratch.addEventListener('mousedown', startScratch);
+canvasScratch.addEventListener('mousemove', scratchLine);
+canvasScratch.addEventListener('mouseup', stopScratch);
+canvasScratch.addEventListener('mouseleave', stopScratch);
 
 
 /* ==========================================================================
-   TELA 7: TOCA-DISCOS
+   TELA 7: TOCA-DISCOS & YOUTUBE (Oceanos - Djavan)
    ========================================================================== */
+let player;
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+        height: '0', width: '0',
+        videoId: '5O6T0B38Y7U', // ID do vídeo Oceanos - Djavan
+        events: { 'onReady': onPlayerReady }
+    });
+}
+function onPlayerReady(event) { /* Pronto para tocar */ }
+
 const needle = document.getElementById('needle');
 const vinyl = document.getElementById('vinyl');
-let isPlaying = false;
+let recordPlaying = false;
+let isDraggingNeedle = false;
 
-// No iPhone, um toque simples arrasta a agulha automaticamente
-document.querySelector('.record-player').addEventListener('click', () => {
-    isPlaying = !isPlaying;
-    if (isPlaying) {
-        needle.classList.add('engaged');
+// Lógica de arrastar a agulha
+const startNeedle = (e) => { isDraggingNeedle = true; e.preventDefault(); };
+const moveNeedle = (e) => {
+    if(!isDraggingNeedle) return;
+    // Ao arrastar pra qualquer lado, rotaciona a agulha para o disco
+    needle.style.transform = `rotate(35deg)`; 
+};
+const stopNeedle = (e) => {
+    if(!isDraggingNeedle) return;
+    isDraggingNeedle = false;
+    // Se soltou e a agulha está no disco (35deg), toca a música
+    if (needle.style.transform === 'rotate(35deg)') {
         vinyl.classList.add('playing');
-        // Aqui você pode adicionar um áudio
-        // let audio = new Audio('sua-musica.mp3'); audio.play();
-    } else {
-        needle.classList.remove('engaged');
+        if(player && player.playVideo) player.playVideo();
+        recordPlaying = true;
+    }
+};
+needle.addEventListener('mousedown', startNeedle);
+document.addEventListener('mousemove', moveNeedle);
+document.addEventListener('mouseup', stopNeedle);
+needle.addEventListener('touchstart', startNeedle, {passive: false});
+document.addEventListener('touchmove', moveNeedle, {passive: false});
+document.addEventListener('touchend', stopNeedle);
+
+// Tocar na agulha para parar/voltar
+needle.addEventListener('click', () => {
+    if(recordPlaying) {
+        needle.style.transform = `rotate(0deg)`;
         vinyl.classList.remove('playing');
+        if(player && player.pauseVideo) player.pauseVideo();
+        recordPlaying = false;
     }
 });
 
 
 /* ==========================================================================
-   TELA 8: POTE DE MOTIVOS
+   TELA 8: POTE DE 100 MOTIVOS (Array de 100 itens únicos)
    ========================================================================== */
-const motives = [
-    "Eu amo o seu sorriso sincero.",
-    "Eu amo como você me faz sentir único.",
-    "Eu amo o nosso humor que só a gente entende.",
-    "Eu amo a sua determinação.",
-    "Eu amo o som da sua risada."
+const hundredMotives = [
+    "Seu sorriso ilumina meu dia.", "Amo o jeito que você me olha.", "Sua risada é minha música favorita.", "Você me faz querer ser melhor.", "Seu abraço é meu lar.", 
+    "Amo como você entende meu silêncio.", "Você é minha pessoa favorita no mundo.", "Sua inteligência me fascina.", "O som da sua voz me acalma.", "Você transforma dias comuns em especiais.",
+    "Amo sua determinação.", "Seu senso de humor combina com o meu.", "Você me dá paz.", "Amo cada pequeno detalhe do seu rosto.", "Você é a melhor parte do meu dia.", 
+    "Sua força me inspira.", "Amo o jeito que você caminha.", "Suas manias são adoráveis.", "Você é meu sonho realizado.", "Amo quando você fala do que gosta.", 
+    "Sua companhia é tudo que eu preciso.", "Amo sua honestidade.", "Você me faz rir mesmo quando não quero.", "Amo nosso cafuné.", "Você é minha alma gêmea.", 
+    "Seu beijo me leva a outro planeta.", "Amo como nos encaixamos.", "Você tem o melhor coração.", "Amo as nossas brincadeiras.", "Você é incrivelmente linda.", 
+    "Amo acordar pensando em você.", "Sua energia é contagiante.", "Amo nossos planos para o futuro.", "Você me entende como ninguém.", "Amo sua empatia.", 
+    "Você traz cor pra minha vida.", "Amo suas mensagens de bom dia.", "Amo seu cheiro.", "Você é minha maior sorte.", "Amo as nossas conversas profundas.", 
+    "Você me passa segurança.", "Amo sua criatividade.", "Você me faz esquecer dos problemas.", "Amo dormir abraçado com você.", "Você ilumina qualquer lugar que entra.", 
+    "Amo seu otimismo.", "Você tem um jeito único de ver a vida.", "Amo nossa parceria.", "Você tira o melhor de mim.", "Amo as nossas piadas internas.", 
+    "Você é meu ponto de equilíbrio.", "Amo sua paciência comigo.", "Você é o motivo da minha felicidade.", "Amo como você cuida de mim.", "Você é incrivelmente forte.", 
+    "Amo o tom da sua pele.", "Você sempre sabe o que dizer.", "Amo admirar você dormindo.", "Você é a resposta das minhas orações.", "Amo como somos um time.", 
+    "Você é minha musa inspiradora.", "Amo o seu gosto musical.", "Você torna a vida mais leve.", "Amo sua autenticidade.", "Você me surpreende a cada dia.", 
+    "Amo nossas viagens juntos.", "Você é meu porto seguro.", "Amo sua bondade.", "Você me faz sentir amado de verdade.", "Amo assistir filmes com você.", 
+    "Você desperta o melhor em mim.", "Amo sua coragem.", "Você me apoia nos meus sonhos.", "Amo como a gente divide a comida.", "Você me faz acreditar no amor.", 
+    "Amo andar de mãos dadas com você.", "Você é o amor da minha vida.", "Amo seu carinho.", "Você me escuta com o coração.", "Amo nosso olhar cúmplice.", 
+    "Você me faz sorrir do nada.", "Amo seu jeito doce e selvagem.", "Você é minha prioridade.", "Amo o jeito que você mexe no cabelo.", "Você transforma tudo em mágica.", 
+    "Amo nossas madrugadas acordados.", "Você é meu sol.", "Amo sua simplicidade.", "Você é meu maior presente.", "Amo como nossos corações batem juntos.", 
+    "Você me completa de todas as formas.", "Amo sua lealdade.", "Você me dá asas para voar.", "Amo a sua história.", "Você é a razão do meu viver.", 
+    "Amo quando você fica com vergonha.", "Você é a luz do fim do túnel.", "Amo que somos amigos e namorados.", "Você é tudo o que eu sempre quis.", "Amo amar você."
 ];
 
 function openPaper() {
-    // Treme o pote um pouquinho antes de abrir
     const jar = document.querySelector('.jar');
-    jar.style.transform = "rotate(10deg)";
-    setTimeout(() => jar.style.transform = "rotate(-10deg)", 100);
+    jar.style.transform = "rotate(15deg)";
+    setTimeout(() => jar.style.transform = "rotate(-15deg)", 100);
     setTimeout(() => jar.style.transform = "rotate(0deg)", 200);
 
     setTimeout(() => {
-        const r = Math.floor(Math.random() * motives.length);
-        document.getElementById('reason-text').innerText = motives[r];
+        const r = Math.floor(Math.random() * hundredMotives.length);
+        document.getElementById('reason-text').innerText = hundredMotives[r];
         document.getElementById('paper-modal').classList.remove('hidden');
     }, 300);
 }
@@ -389,7 +439,6 @@ function nextClimaxPhase() {
     document.getElementById('climax-phase-2').classList.remove('hidden');
     document.getElementById('climax-phase-2').classList.add('active');
 }
-
 function finalQuestion() {
     document.getElementById('climax-phase-2').classList.remove('active');
     document.getElementById('climax-phase-2').classList.add('hidden');
@@ -397,80 +446,64 @@ function finalQuestion() {
     document.getElementById('climax-phase-3').classList.add('active');
 }
 
-// O famoso BOTÃO FUJÃO
+// BOTÃO FUJÃO NOVO E MELHORADO
 const btnNao = document.getElementById('btn-nao');
 const runaway = (e) => {
-    e.preventDefault(); // Evita que ela clique no touch
+    e.preventDefault(); 
     const containerWidth = document.querySelector('.final-buttons').clientWidth;
     const containerHeight = document.querySelector('.final-buttons').clientHeight;
-    
-    // Calcula posições aleatórias dentro do contêiner seguro
     const newX = Math.random() * (containerWidth - 80);
     const newY = Math.random() * (containerHeight - 50);
-    
     btnNao.style.left = `${newX}px`;
     btnNao.style.top = `${newY}px`;
 };
-// Reage ao tentar tocar ou deslizar sobre ele
 btnNao.addEventListener('touchstart', runaway, {passive: false});
 btnNao.addEventListener('mouseover', runaway);
 
 
-// FOGOS DE ARTIFÍCIO (Quando ela clicar em SIM)
+// FOGOS DE ARTIFÍCIO (Com botão de voltar ao final)
 function triggerFireworks() {
-    const canvas = document.getElementById('fireworks-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.style.display = 'block';
+    const canvasF = document.getElementById('fireworks-canvas');
+    const ctxF = canvasF.getContext('2d');
+    canvasF.width = window.innerWidth; canvasF.height = window.innerHeight;
+    canvasF.style.display = 'block';
 
     let particles = [];
-    
     function createFirework(x, y) {
-        let colors = ['#ff7597', '#ffdf00', '#38ef7d', '#00b4d8', '#a875ff'];
-        for (let i = 0; i < 50; i++) {
+        let colors = ['#00b4d8', '#00f5d4', '#90e0ef', '#caf0f8', '#0077b6'];
+        for (let i = 0; i < 60; i++) {
             particles.push({
-                x: x,
-                y: y,
-                vx: (Math.random() - 0.5) * 10,
-                vy: (Math.random() - 0.5) * 10,
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12,
                 color: colors[Math.floor(Math.random() * colors.length)],
                 life: Math.random() * 30 + 30
             });
         }
     }
 
-    function animate() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Rastro visual
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function animateF() {
+        ctxF.fillStyle = 'rgba(1, 8, 26, 0.2)'; 
+        ctxF.fillRect(0, 0, canvasF.width, canvasF.height);
         
         particles.forEach((p, index) => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.2; // Gravidade
-            p.life--;
-            
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.fill();
-            
+            p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life--;
+            ctxF.beginPath(); ctxF.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctxF.fillStyle = p.color; ctxF.fill();
             if (p.life <= 0) particles.splice(index, 1);
         });
 
-        // Estoura um novo fogo aleatório automaticamente
-        if (Math.random() < 0.05) {
-            createFirework(Math.random() * canvas.width, Math.random() * canvas.height / 2);
-        }
-
-        requestAnimationFrame(animate);
+        if (Math.random() < 0.08) createFirework(Math.random() * canvasF.width, Math.random() * canvasF.height / 2);
+        requestAnimationFrame(animateF);
     }
     
-    // O primeiro estouro vem do centro da tela
-    createFirework(canvas.width / 2, canvas.height / 2);
-    animate();
+    createFirework(canvasF.width / 2, canvasF.height / 2);
+    animateF();
     
-    // Troca o 
-    document.querySelector('#climax-phase-3 h2').innerText = "Eu sabia que você diria SIM! ❤️";
+    document.querySelector('#climax-phase-3 h2').innerText = "Eu sabia que você diria SIM! 💙";
     document.querySelector('.final-buttons').style.display = 'none';
+    
+    // Mostra o botão de voltar após 2 segundos de fogos
+    setTimeout(() => {
+        document.getElementById('final-back-btn').classList.remove('hidden');
+    }, 2000);
 }

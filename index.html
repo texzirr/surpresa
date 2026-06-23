@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Para Você</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Fontes do Google -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- API do YouTube para o Toca-Discos -->
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
 
+    <!-- TELA 0: SENHA -->
+    <section id="screen-password" class="screen active">
+        <div class="pwd-container">
+            <h1>Acesso Restrito</h1>
+            <p>Insira a data em que nossa história começou:</p>
+            <input type="text" id="pwd-input" placeholder="DD/MM/AAAA" maxlength="10">
+            <button onclick="checkPassword()">Entrar</button>
+            <p id="pwd-msg"></p>
+        </div>
+    </section>
+
     <!-- TELA 1: BIOMETRIA -->
-    <section id="screen-biometrics" class="screen active">
+    <section id="screen-biometrics" class="screen">
         <div class="bio-container">
             <h1>Pressione e segure</h1>
             <p>Para desbloquear nosso mundo</p>
@@ -22,7 +34,7 @@
         </div>
     </section>
 
-    <!-- TELA MENU PRINCIPAL (Navegação Livre) -->
+    <!-- TELA MENU PRINCIPAL -->
     <section id="screen-menu" class="screen">
         <header>
             <h2>Nosso Universo</h2>
@@ -35,7 +47,7 @@
             <button class="menu-item" onclick="navTo('screen-thermometer')">🌡️ Termômetro</button>
             <button class="menu-item" onclick="navTo('screen-scratch')">🪙 Raspadinha</button>
             <button class="menu-item" onclick="navTo('screen-record')">🎵 Toca-Discos</button>
-            <button class="menu-item" onclick="navTo('screen-jar')">🏺 Pote de Motivos</button>
+            <button class="menu-item" onclick="navTo('screen-jar')">🏺 100 Motivos</button>
             <button class="menu-item" onclick="navTo('screen-vault')">🔐 Cofre Secreto</button>
             <button class="menu-item climax-btn" onclick="navTo('screen-climax')">💌 Surpresa Final</button>
         </div>
@@ -44,8 +56,10 @@
     <!-- TELA 2: CÉU GALÁCTICO -->
     <section id="screen-sky" class="screen">
         <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
-        <div id="constellation-container">
-            <!-- Estrelas geradas via JS -->
+        <div id="constellation-container"></div>
+        <div id="live-counter">
+            <p>Escrevendo nossa história há:</p>
+            <div id="time-display">Carregando...</div>
         </div>
         <div id="star-modal" class="modal hidden">
             <div class="modal-content">
@@ -60,8 +74,7 @@
     <section id="screen-polaroids" class="screen">
         <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
         <div id="polaroid-board">
-            <!-- 10 Polaroids serão inseridas aqui via JS/HTML -->
-            <p class="instruction">Arraste as fotos e toque para virar</p>
+            <p class="instruction">Arraste as fotos (segure e puxe) e toque para virar</p>
         </div>
     </section>
 
@@ -100,7 +113,7 @@
         <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
         <h2>Raspe para descobrir</h2>
         <div class="scratch-container">
-            <div class="scratch-content">Vale um Beijo Apaixonado!</div>
+            <div class="scratch-content" id="scratch-prize">Vale um Beijo Apaixonado!</div>
             <canvas id="scratch-canvas"></canvas>
         </div>
     </section>
@@ -109,23 +122,33 @@
     <section id="screen-record" class="screen">
         <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
         <div class="record-player">
-            <div id="vinyl" class="vinyl"></div>
-            <div id="needle" class="needle"></div>
+            <div id="vinyl" class="vinyl">
+                <div class="vinyl-center"></div>
+            </div>
+            <!-- Detalhes do toca discos -->
+            <div class="tonearm-base"></div>
+            <div id="needle" class="needle">
+                <div class="needle-head"></div>
+            </div>
         </div>
-        <p>Arraste a agulha para o disco</p>
+        <p>Arraste a agulha até o disco para tocar</p>
+        <!-- Iframe invisível para música -->
+        <div id="player" style="display:none;"></div>
     </section>
 
     <!-- TELA 8: POTE DE MOTIVOS -->
     <section id="screen-jar" class="screen">
         <button class="back-btn" onclick="navTo('screen-menu')">Voltar</button>
         <div class="jar-container" onclick="openPaper()">
-            <div class="jar"></div>
-            <p>Toque no pote para puxar um papel</p>
+            <div class="jar">
+                <div class="jar-label">❤️</div>
+            </div>
+            <p>Toque no pote para ler um dos 100 motivos</p>
         </div>
         <div id="paper-modal" class="modal hidden">
             <div class="modal-content paper-style">
                 <p id="reason-text">Motivo gerado aqui...</p>
-                <button onclick="closeModal('paper-modal')">Guardar</button>
+                <button onclick="closeModal('paper-modal')">Guardar no Coração</button>
             </div>
         </div>
     </section>
@@ -151,23 +174,24 @@
         </div>
 
         <div id="climax-phase-2" class="climax-phase hidden">
-            <div class="large-letter">
-                <p>Aqui entra o seu texto gigante. Todo o seu coração derramado nestas linhas. A história de vocês, as lutas, a saudade entre janeiro e março, e a alegria de estarem juntos hoje, dia 19 de junho de 2026...</p>
-                <!-- Você preencherá este texto depois -->
+            <div class="large-letter fade-in">
+                <p>Aqui entra o seu texto gigante. Todo o seu coração derramado nestas linhas. A história de vocês, as lutas, a saudade entre janeiro e março, e a alegria de estarem juntos hoje...</p>
+                <!-- Preencha este texto depois -->
             </div>
-            <button class="continue-btn" onclick="finalQuestion()">Continuar</button>
+            <button class="continue-btn fade-in" onclick="finalQuestion()">Continuar</button>
         </div>
 
         <div id="climax-phase-3" class="climax-phase hidden">
-            <h2>Você aceita continuar escrevendo essa história comigo?</h2>
-            <div class="final-buttons">
+            <h2 class="fade-in">Você aceita continuar escrevendo essa história comigo?</h2>
+            <div class="final-buttons fade-in">
                 <button id="btn-sim" onclick="triggerFireworks()">SIM</button>
                 <button id="btn-nao">NÃO</button>
             </div>
         </div>
+        
+        <button id="final-back-btn" class="hidden" onclick="navTo('screen-menu')">Voltar ao Menu Principal</button>
     </section>
 
-    <!-- FOGOS DE ARTIFÍCIO (Canvas) -->
     <canvas id="fireworks-canvas"></canvas>
 
     <script src="js.js"></script>
